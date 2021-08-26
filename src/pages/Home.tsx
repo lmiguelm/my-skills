@@ -4,10 +4,15 @@ import { StyleSheet, View, Text, TextInput, Platform, FlatList } from 'react-nat
 import { Button } from '../components/Button';
 import { SkillCard } from '../components/SkillsCard';
 
+type Skill = {
+  id: string;
+  name: string;
+};
+
 export function Home() {
-  const [newSkill, setNewSkill] = useState('');
-  const [mySkills, setMySkills] = useState([]);
-  const [greeting, setGreeing] = useState('');
+  const [newSkill, setNewSkill] = useState<string>('');
+  const [greeting, setGreeing] = useState<string>('');
+  const [mySkills, setMySkills] = useState<Skill[]>([]);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -23,8 +28,18 @@ export function Home() {
 
   function handleNewSkill() {
     if (newSkill === '') return;
-    setMySkills((oldstate) => [...oldstate, newSkill]);
+
+    const data = {
+      id: String(new Date().getTime()),
+      name: newSkill,
+    };
+
+    setMySkills((oldstate) => [...oldstate, data]);
     setNewSkill('');
+  }
+
+  function handleRemoveSkill(id: string) {
+    setMySkills((oldstate) => oldstate.filter((skill) => skill.id !== id));
   }
 
   return (
@@ -40,14 +55,16 @@ export function Home() {
         placeholderTextColor="#555"
       />
 
-      <Button onPress={handleNewSkill} />
+      <Button title="Add" onPress={handleNewSkill} />
 
       <Text style={[styles.title, { marginVertical: 50 }]}>My Skills</Text>
 
       <FlatList
-        keyExtractor={(skill) => skill}
+        keyExtractor={({ id }) => id}
         data={mySkills}
-        renderItem={({ item }) => <SkillCard key={item} skill={item} />}
+        renderItem={({ item }) => (
+          <SkillCard onPress={() => handleRemoveSkill(item.id)} key={item.id} skill={item.name} />
+        )}
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -58,7 +75,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#121015',
-    paddingHorizontal: 20,
     paddingVertical: 70,
     paddingHorizontal: 30,
   },
